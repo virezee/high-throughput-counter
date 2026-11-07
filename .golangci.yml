@@ -1,0 +1,120 @@
+version: "2"
+linters:
+  enable:
+    - bodyclose
+    - errcheck
+    - errorlint
+    - gocritic
+    - gosec
+    - govet
+    - ineffassign
+    - modernize
+    - nilerr
+    - nilnil
+    - nolintlint
+    - revive
+    - staticcheck
+    - unused
+    - zerologlint
+  settings:
+    bodyclose:
+      check-consumption: true
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+      disable-default-exclusions: true
+      verbose: true
+    errorlint:
+      errorf: true
+      errorf-multi: true
+      asserts: true
+      comparison: true
+    gocritic:
+      enable-all: true
+    govet:
+      enable-all: true
+    ineffassign:
+      check-escaping-errors: true
+    nilnil:
+      only-two: false
+      detect-opposite: true
+    nolintlint:
+      allow-unused: false
+      allow-no-explanation: []
+      require-explanation: true
+      require-specific: true
+    revive:
+      severity: error
+      enable-all-rules: true
+      directives:
+        - name: specify-disable-reason
+          severity: error
+        - name: specify-disable-rule
+          severity: error
+      confidence: 0.1
+      rules:
+        - name: exported
+          disabled: true
+        - name: package-comments
+          disabled: true
+    staticcheck:
+      dot-import-whitelist: []
+      http-status-code-whitelist: []
+      checks:
+        - all
+        - -ST1000
+    unused:
+      field-writes-are-uses: false
+      post-statements-are-reads: false
+      exported-fields-are-used: false
+      parameters-are-used: true
+      local-variables-are-used: false
+      generated-is-used: false
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+    - golines
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(high-throughput-counter)
+        - blank
+        - dot
+        - alias
+      no-inline-comments: false
+      no-prefix-comments: false
+      custom-order: true
+      no-lex-order: false
+    gofmt:
+      simplify: true
+      rewrite-rules:
+        - pattern: "interface{}"
+          replacement: "any"
+    gofumpt:
+      extra:
+        group-params: true
+        clothe-returns: true
+        balance-calls: true
+    golines:
+      max-len: 100
+      tab-len: 4
+      shorten-comments: false
+      reformat-tags: true
+      chain-split-dots: true
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  uniq-by-line: true
+  new: false
+  new-from-merge-base: ""
+  new-from-rev: ""
+  new-from-patch: ""
+  whole-files: true
+  fix: true
+severity:
+  default: error
