@@ -7,5 +7,5 @@ import (
 )
 
 type LikeUseCase interface {
-	LikePost(ctx context.Context, postID, userID uuid.UUID) (bool, error)
+	LikePost(ctx context.Context, postID, userID uuid.UUID) error
 }

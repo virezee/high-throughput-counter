@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 
 	"high-throughput-counter/internal/application/port/inbound"
 )
@@ -28,13 +29,10 @@ func (h *LikeHandler) LikePost(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	liked, err := h.likeUC.LikePost(r.Context(), postID, userID)
+	log.Debug().Str("post_id", postID.String()).Str("user_id", userID.String()).Send()
+	err = h.likeUC.LikePost(r.Context(), postID, userID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	if !liked {
-		w.WriteHeader(http.StatusConflict)
 		return
 	}
 	w.WriteHeader(http.StatusAccepted)

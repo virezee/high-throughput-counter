@@ -6,6 +6,7 @@ CREATE TABLE orders (
     id uuid PRIMARY KEY,
     flash_sale_id uuid NOT NULL,
     user_id uuid NOT NULL,
+    created_at timestamptz NOT NULL,
     UNIQUE (flash_sale_id, user_id)
 );
 INSERT INTO flash_sales (id, stock)
