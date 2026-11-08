@@ -24,6 +24,10 @@ func NewLikeUseCase(
 	return &likeUseCase{publisher, counterRepo, likeRepo}
 }
 
+func (uc *likeUseCase) LikeCount(ctx context.Context, postID uuid.UUID) (int64, error) {
+	return uc.counterRepo.Count(ctx, postID)
+}
+
 func (uc *likeUseCase) LikePost(ctx context.Context, postID, userID uuid.UUID) error {
 	return uc.publisher.Publish(ctx, postID, userID, time.Now())
 }

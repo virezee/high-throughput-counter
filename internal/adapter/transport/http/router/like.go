@@ -7,6 +7,6 @@ import (
 )
 
 func RegisterLike(r chi.Router, h *httphandler.LikeHandler) {
+	r.Get("/posts/{id}/likes", h.LikeCount)
 	r.Post("/posts/{id}/like", h.LikePost)
-	// r.Method("/posts/{id}/likes", h.Count)
 }

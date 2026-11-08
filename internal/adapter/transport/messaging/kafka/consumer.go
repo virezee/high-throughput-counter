@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -11,6 +12,8 @@ import (
 	"high-throughput-counter/internal/application/port/inbound"
 	"high-throughput-counter/internal/domain/like"
 )
+
+const processTimeout = 10 * time.Second
 
 type consumer struct {
 	cl *kgo.Client
@@ -24,7 +27,10 @@ func NewConsumer(cl *kgo.Client, uc inbound.LikeUseCase) *consumer {
 func (c *consumer) ProcessLikes(ctx context.Context) error {
 	for {
 		fetches := c.cl.PollFetches(ctx)
-		if ctx.Err() != nil || fetches.IsClientClosed() {
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		if fetches.IsClientClosed() {
 			return nil
 		}
 		err := fetches.Err()
@@ -35,12 +41,13 @@ func (c *consumer) ProcessLikes(ctx context.Context) error {
 		iter := fetches.RecordIter()
 		for !iter.Done() {
 			r := iter.Next()
-			userID, err := uuid.FromBytes(r.Key)
+			var userID, postID uuid.UUID
+			userID, err = uuid.FromBytes(r.Key)
 			if err != nil {
 				log.Warn().Err(err).Int64("offset", r.Offset).Msg("invalid user_id")
 				continue
 			}
-			postID, err := uuid.FromBytes(r.Value)
+			postID, err = uuid.FromBytes(r.Value)
 			if err != nil {
 				log.Warn().Err(err).Int64("offset", r.Offset).Msg("invalid post_id")
 				continue
@@ -54,13 +61,16 @@ func (c *consumer) ProcessLikes(ctx context.Context) error {
 		if len(likes) == 0 {
 			continue
 		}
-		err = c.uc.ProcessLikes(ctx, likes)
+		pctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), processTimeout)
+		err = c.uc.ProcessLikes(pctx, likes)
 		if err != nil {
-			return fmt.Errorf("kafka process likes: %w", err)
+			cancel()
+			return err
 		}
-		err = c.cl.CommitUncommittedOffsets(ctx)
+		err = c.cl.CommitUncommittedOffsets(pctx)
+		cancel()
 		if err != nil {
-			return fmt.Errorf("kafka commit offsets: %w", err)
+			return fmt.Errorf("kafka commit uncommitted offsets: %w", err)
 		}
 	}
 }

@@ -3,6 +3,7 @@ package dragonfly
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
@@ -17,7 +18,10 @@ func NewCounter(rdb *redis.Client) *counterRepository {
 }
 
 func (c *counterRepository) Increment(ctx context.Context, postID uuid.UUID, n int64) error {
-	return c.rdb.IncrBy(ctx, likesKey(postID), n).Err()
+	if err := c.rdb.IncrBy(ctx, likesKey(postID), n).Err(); err != nil {
+		return fmt.Errorf("dragonfly increment: %w", err)
+	}
+	return nil
 }
 
 func (c *counterRepository) Count(ctx context.Context, postID uuid.UUID) (int64, error) {
@@ -25,7 +29,10 @@ func (c *counterRepository) Count(ctx context.Context, postID uuid.UUID) (int64,
 	if errors.Is(err, redis.Nil) {
 		return 0, nil
 	}
-	return count, err
+	if err != nil {
+		return 0, fmt.Errorf("dragonfly count: %w", err)
+	}
+	return count, nil
 }
 
 func likesKey(postID uuid.UUID) string {
