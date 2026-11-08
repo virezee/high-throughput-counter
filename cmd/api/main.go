@@ -26,13 +26,14 @@ func main() {
 		syscall.SIGTERM,
 	)
 	defer stop()
-	app, cleanup := bootstrap.NewApp()
+	app, stopStreams, cleanup := bootstrap.NewApp()
 	defer cleanup()
 	srv := &http.Server{
 		Addr:              ":3000",
 		Handler:           app,
 		ReadHeaderTimeout: readHeaderTimeout,
 	}
+	srv.RegisterOnShutdown(stopStreams)
 	go func() {
 		err := srv.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {

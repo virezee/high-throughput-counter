@@ -14,12 +14,15 @@ import (
 
 const likeCountInterval = 50 * time.Millisecond
 
+const noLikeCount int64 = -1
+
 type LikeHandler struct {
-	likeUC inbound.LikeUseCase
+	likeUC   inbound.LikeUseCase
+	shutdown <-chan struct{}
 }
 
-func NewLikeHandler(likeUC inbound.LikeUseCase) *LikeHandler {
-	return &LikeHandler{likeUC}
+func NewLikeHandler(likeUC inbound.LikeUseCase, shutdown <-chan struct{}) *LikeHandler {
+	return &LikeHandler{likeUC, shutdown}
 }
 
 func (h *LikeHandler) LikeCount(w http.ResponseWriter, r *http.Request) {
@@ -32,16 +35,17 @@ func (h *LikeHandler) LikeCount(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache")
 	ticker := time.NewTicker(likeCountInterval)
 	defer ticker.Stop()
-	var last int64
-	sent := false
+	last := noLikeCount
 	for {
-		last, sent, err = h.sendLikeCount(w, r, postID, last, sent)
+		last, err = h.sendLikeCount(w, r, postID, last)
 		if err != nil {
 			log.Error().Err(err).Str("post_id", postID.String()).Send()
 			return
 		}
 		select {
 		case <-r.Context().Done():
+			return
+		case <-h.shutdown:
 			return
 		case <-ticker.C:
 		}
@@ -73,22 +77,22 @@ func (h *LikeHandler) sendLikeCount(
 	r *http.Request,
 	postID uuid.UUID,
 	last int64,
-	sent bool,
-) (int64, bool, error) {
+) (int64, error) {
 	count, err := h.likeUC.LikeCount(r.Context(), postID)
 	if err != nil {
-		return last, sent, err
+		return last, err
 	}
-	if sent && count == last {
-		return last, sent, nil
+	if count == last {
+		return last, nil
 	}
+	//nolint:gosec // count is int64 formatted with %d, digits only
 	_, err = fmt.Fprintf(w, "data: %d\n\n", count)
 	if err != nil {
-		return last, sent, fmt.Errorf("http write like count: %w", err)
+		return last, fmt.Errorf("http write like count: %w", err)
 	}
 	err = http.NewResponseController(w).Flush()
 	if err != nil {
-		return last, sent, fmt.Errorf("http flush like count: %w", err)
+		return last, fmt.Errorf("http flush like count: %w", err)
 	}
-	return count, true, nil
+	return count, nil
 }

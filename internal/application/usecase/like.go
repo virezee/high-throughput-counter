@@ -45,3 +45,17 @@ func (uc *likeUseCase) ProcessLikes(ctx context.Context, likes []like.Like) erro
 	}
 	return nil
 }
+
+func (uc *likeUseCase) ReconcileLikes(ctx context.Context) error {
+	counts, err := uc.likeRepo.CountByPost(ctx)
+	if err != nil {
+		return err
+	}
+	for postID, n := range counts {
+		err = uc.counterRepo.Set(ctx, postID, n)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

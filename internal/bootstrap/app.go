@@ -14,7 +14,7 @@ import (
 	httphandler "high-throughput-counter/internal/adapter/transport/http/handler"
 )
 
-func NewApp() (app *chi.Mux, cleanup func()) {
+func NewApp() (app *chi.Mux, stopStreams, cleanup func()) {
 	rdb := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
 	cl, err := kgo.NewClient(kgo.SeedBrokers("localhost:9092"))
 	if err != nil {
@@ -23,9 +23,13 @@ func NewApp() (app *chi.Mux, cleanup func()) {
 	counterRepo := dragonfly.NewCounter(rdb)
 	producer := kafka.NewProducer(cl, "likes", "checkouts")
 	likeUC := usecase.NewLikeUseCase(producer, counterRepo, nil)
-	likeHandler := httphandler.NewLikeHandler(likeUC)
+	shutdown := make(chan struct{})
+	likeHandler := httphandler.NewLikeHandler(likeUC, shutdown)
 	r := chi.NewRouter()
 	router.RegisterLike(r, likeHandler)
+	stopStreams = func() {
+		close(shutdown)
+	}
 	cleanup = func() {
 		cl.Close()
 		err := rdb.Close()
@@ -33,5 +37,5 @@ func NewApp() (app *chi.Mux, cleanup func()) {
 			log.Error().Err(err).Send()
 		}
 	}
-	return r, cleanup
+	return r, stopStreams, cleanup
 }

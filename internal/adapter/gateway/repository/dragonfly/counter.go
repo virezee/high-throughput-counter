@@ -35,6 +35,13 @@ func (c *counterRepository) Count(ctx context.Context, postID uuid.UUID) (int64,
 	return count, nil
 }
 
+func (c *counterRepository) Set(ctx context.Context, postID uuid.UUID, n int64) error {
+	if err := c.rdb.Set(ctx, likesKey(postID), n, 0).Err(); err != nil {
+		return fmt.Errorf("dragonfly set: %w", err)
+	}
+	return nil
+}
+
 func likesKey(postID uuid.UUID) string {
 	return "post:" + postID.String() + ":likes"
 }

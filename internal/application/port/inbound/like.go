@@ -12,4 +12,5 @@ type LikeUseCase interface {
 	LikeCount(ctx context.Context, postID uuid.UUID) (int64, error)
 	LikePost(ctx context.Context, postID, userID uuid.UUID) error
 	ProcessLikes(ctx context.Context, likes []like.Like) error
+	ReconcileLikes(ctx context.Context) error
 }

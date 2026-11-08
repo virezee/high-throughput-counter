@@ -20,6 +20,8 @@ WITH inserted AS (
 )
 SELECT post_id, count(*) FROM inserted GROUP BY post_id`
 
+const countByPostQuery = `SELECT post_id, count(*) FROM likes GROUP BY post_id`
+
 type likeRepository struct {
 	pool *pgxpool.Pool
 }
@@ -60,4 +62,27 @@ func (r *likeRepository) SaveBatch(
 		return nil, fmt.Errorf("postgres save batch rows: %w", err)
 	}
 	return added, nil
+}
+
+func (r *likeRepository) CountByPost(ctx context.Context) (map[uuid.UUID]int64, error) {
+	rows, err := r.pool.Query(ctx, countByPostQuery)
+	if err != nil {
+		return nil, fmt.Errorf("postgres count by post query: %w", err)
+	}
+	defer rows.Close()
+	counts := make(map[uuid.UUID]int64)
+	for rows.Next() {
+		var postID uuid.UUID
+		var n int64
+		err = rows.Scan(&postID, &n)
+		if err != nil {
+			return nil, fmt.Errorf("postgres count by post scan: %w", err)
+		}
+		counts[postID] = n
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, fmt.Errorf("postgres count by post rows: %w", err)
+	}
+	return counts, nil
 }
