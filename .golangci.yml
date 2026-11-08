@@ -53,9 +53,18 @@ linters:
           severity: error
       confidence: 0.1
       rules:
+        - name: add-constant
+          arguments:
+            - allow-ints: "0"
         - name: exported
           disabled: true
+        - name: line-length-limit
+          arguments: [100]
         - name: package-comments
+          disabled: true
+        - name: package-directory-mismatch
+          disabled: true
+        - name: unexported-return
           disabled: true
     staticcheck:
       dot-import-whitelist: []

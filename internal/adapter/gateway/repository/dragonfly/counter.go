@@ -1,4 +1,4 @@
-package dragonflyrepo
+package dragonfly
 
 import (
 	"context"
@@ -12,7 +12,7 @@ type counterRepository struct {
 	rdb *redis.Client
 }
 
-func NewLikeCounter(rdb *redis.Client) *counterRepository {
+func NewCounter(rdb *redis.Client) *counterRepository {
 	return &counterRepository{rdb}
 }
 
