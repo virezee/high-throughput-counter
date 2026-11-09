@@ -105,6 +105,7 @@ formatters:
         - pattern: "interface{}"
           replacement: "any"
     gofumpt:
+      module-path: high-throughput-counter
       extra:
         group-params: true
         clothe-returns: true
