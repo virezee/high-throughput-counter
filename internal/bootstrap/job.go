@@ -12,12 +12,15 @@ import (
 	"high-throughput-counter/internal/application/usecase"
 )
 
-func NewJob(ctx context.Context) (reconcileLikes func(context.Context) error, cleanup func()) {
-	pool, err := pgxpool.New(ctx, "postgres://root:root@localhost:5432/high-throughput-counter")
+func NewJob(
+	ctx context.Context,
+	postgresDSN, dragonflyAddr string,
+) (reconcileLikes func(context.Context) error, cleanup func()) {
+	pool, err := pgxpool.New(ctx, postgresDSN)
 	if err != nil {
 		log.Fatal().Err(err).Send()
 	}
-	rdb := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
+	rdb := redis.NewClient(&redis.Options{Addr: dragonflyAddr})
 	likeRepo := postgres.NewRepository(pool)
 	counterRepo := dragonfly.NewCounter(rdb)
 	likeUC := usecase.NewLikeUseCase(nil, counterRepo, likeRepo)

@@ -14,14 +14,17 @@ import (
 	"high-throughput-counter/internal/application/usecase"
 )
 
-func NewWorker(ctx context.Context) (processLikes func(context.Context) error, cleanup func()) {
-	pool, err := pgxpool.New(ctx, "postgres://root:root@localhost:5432/high-throughput-counter")
+func NewWorker(
+	ctx context.Context,
+	postgresDSN, dragonflyAddr, kafkaAddr string,
+) (processLikes func(context.Context) error, cleanup func()) {
+	pool, err := pgxpool.New(ctx, postgresDSN)
 	if err != nil {
 		log.Fatal().Err(err).Send()
 	}
-	rdb := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
+	rdb := redis.NewClient(&redis.Options{Addr: dragonflyAddr})
 	cl, err := kgo.NewClient(
-		kgo.SeedBrokers("localhost:9092"),
+		kgo.SeedBrokers(kafkaAddr),
 		kgo.ConsumerGroup("like-worker"),
 		kgo.ConsumeTopics("likes"),
 		kgo.DisableAutoCommit(),

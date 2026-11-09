@@ -25,7 +25,11 @@ func main() {
 		syscall.SIGTERM,
 	)
 	defer stop()
-	reconcileLikes, cleanup := bootstrap.NewJob(ctx)
+	reconcileLikes, cleanup := bootstrap.NewJob(
+		ctx,
+		"postgres://root:root@localhost:5432/high-throughput-counter",
+		"localhost:6379",
+	)
 	defer cleanup()
 	ticker := time.NewTicker(reconcileInterval)
 	defer ticker.Stop()

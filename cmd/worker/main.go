@@ -23,7 +23,12 @@ func main() {
 		syscall.SIGTERM,
 	)
 	defer stop()
-	processLikes, cleanup := bootstrap.NewWorker(ctx)
+	processLikes, cleanup := bootstrap.NewWorker(
+		ctx,
+		"postgres://root:root@localhost:5432/high-throughput-counter",
+		"localhost:6379",
+		"localhost:9092",
+	)
 	defer cleanup()
 	err := processLikes(ctx)
 	if err != nil && !errors.Is(err, context.Canceled) {

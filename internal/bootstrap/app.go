@@ -14,9 +14,9 @@ import (
 	httphandler "high-throughput-counter/internal/adapter/transport/http/handler"
 )
 
-func NewApp() (app *chi.Mux, stopStreams, cleanup func()) {
-	rdb := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
-	cl, err := kgo.NewClient(kgo.SeedBrokers("localhost:9092"))
+func NewApp(dragonflyAddr, kafkaAddr string) (app *chi.Mux, stopStreams, cleanup func()) {
+	rdb := redis.NewClient(&redis.Options{Addr: dragonflyAddr})
+	cl, err := kgo.NewClient(kgo.SeedBrokers(kafkaAddr))
 	if err != nil {
 		log.Fatal().Err(err).Send()
 	}
