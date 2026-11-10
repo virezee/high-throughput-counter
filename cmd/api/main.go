@@ -26,7 +26,10 @@ func main() {
 		syscall.SIGTERM,
 	)
 	defer stop()
-	app, stopStreams, cleanup := bootstrap.NewApp("localhost:6379", "localhost:9092")
+	app, stopStreams, cleanup := bootstrap.NewApp(
+		os.Getenv("DRAGONFLY_ADDR"),
+		os.Getenv("KAFKA_ADDR"),
+	)
 	defer cleanup()
 	srv := &http.Server{
 		Addr:              ":3000",

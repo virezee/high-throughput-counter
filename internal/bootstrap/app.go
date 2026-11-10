@@ -27,6 +27,7 @@ func NewApp(dragonflyAddr, kafkaAddr string) (app *chi.Mux, stopStreams, cleanup
 	likeHandler := httphandler.NewLikeHandler(likeUC, shutdown)
 	r := chi.NewRouter()
 	router.RegisterLike(r, likeHandler)
+	router.RegisterOps(r, httphandler.NewOpsHandler())
 	stopStreams = func() {
 		close(shutdown)
 	}

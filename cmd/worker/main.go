@@ -25,9 +25,9 @@ func main() {
 	defer stop()
 	processLikes, cleanup := bootstrap.NewWorker(
 		ctx,
-		"postgres://root:root@localhost:5432/high-throughput-counter",
-		"localhost:6379",
-		"localhost:9092",
+		os.Getenv("POSTGRES_DSN"),
+		os.Getenv("DRAGONFLY_ADDR"),
+		os.Getenv("KAFKA_ADDR"),
 	)
 	defer cleanup()
 	err := processLikes(ctx)

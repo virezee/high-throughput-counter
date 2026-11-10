@@ -27,8 +27,8 @@ func main() {
 	defer stop()
 	reconcileLikes, cleanup := bootstrap.NewJob(
 		ctx,
-		"postgres://root:root@localhost:5432/high-throughput-counter",
-		"localhost:6379",
+		os.Getenv("POSTGRES_DSN"),
+		os.Getenv("DRAGONFLY_ADDR"),
 	)
 	defer cleanup()
 	ticker := time.NewTicker(reconcileInterval)

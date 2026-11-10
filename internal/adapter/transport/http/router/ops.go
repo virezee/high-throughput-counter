@@ -1,17 +1,12 @@
 package router
 
 import (
-	"net/http"
-
 	"github.com/go-chi/chi/v5"
+
+	httphandler "high-throughput-counter/internal/adapter/transport/http/handler"
 )
 
-type OpsHandlers struct {
-	Healthz http.Handler
-	Metrics http.Handler
-}
-
-func RegisterOps(r chi.Router, h OpsHandlers) {
-	r.Method(http.MethodGet, "/healthz", h.Healthz)
-	r.Method(http.MethodGet, "/metrics", h.Metrics)
+func RegisterOps(r chi.Router, h *httphandler.OpsHandler) {
+	r.Get("/healthz", h.Healthz)
+	r.Get("/metrics", h.Metrics)
 }

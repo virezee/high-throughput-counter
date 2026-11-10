@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: job
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: job
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: job
+    spec:
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: job
+          image: high-throughput-counter-job
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_DSN
+              value: postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable
+            - name: DRAGONFLY_ADDR
+              value: dragonfly:6379
+          resources:
+            requests:
+              cpu: 500m
+              memory: 256Mi
+            limits:
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL

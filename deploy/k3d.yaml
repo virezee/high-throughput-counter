@@ -1,0 +1,10 @@
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: high-throughput-counter
+servers: 1
+agents: 2
+ports:
+  - port: 3000:3000
+    nodeFilters:
+      - loadbalancer

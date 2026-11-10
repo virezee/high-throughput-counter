@@ -7,6 +7,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/rs/zerolog/log"
 
 	"high-throughput-counter/internal/application/port/inbound"
@@ -15,6 +17,11 @@ import (
 const likeCountInterval = 50 * time.Millisecond
 
 const noLikeCount int64 = -1
+
+var sseActiveConnections = promauto.NewGauge(prometheus.GaugeOpts{
+	Name: "sse_active_connections",
+	Help: "Number of open like count SSE streams.",
+})
 
 type LikeHandler struct {
 	likeUC   inbound.LikeUseCase
@@ -33,6 +40,8 @@ func (h *LikeHandler) LikeCount(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
+	sseActiveConnections.Inc()
+	defer sseActiveConnections.Dec()
 	ticker := time.NewTicker(likeCountInterval)
 	defer ticker.Stop()
 	last := noLikeCount
