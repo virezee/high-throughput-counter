@@ -6,8 +6,11 @@ COPY . .
 ARG CMD
 RUN CGO_ENABLED=0 GOOS=linux go build -o /app/bin ./cmd/${CMD}
 
+FROM migrate/migrate AS migrate
+COPY migrations /migrations
+
 FROM gcr.io/distroless/static-debian13
 WORKDIR /
 COPY --from=build /app/bin /app
 USER nonroot:nonroot
-ENTRYPOINT ["/app"]
+ENTRYPOINT ["/app"]J

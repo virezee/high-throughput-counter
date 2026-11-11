@@ -16,6 +16,8 @@ spec:
       containers:
         - name: dragonfly
           image: docker.dragonflydb.io/dragonflydb/dragonfly
+          args:
+            - --proactor_threads=8
           ports:
             - name: redis
               containerPort: 6379

@@ -44,10 +44,10 @@ spec:
               value: kafka:9092
           resources:
             requests:
-              cpu: 500m
-              memory: 256Mi
+              cpu: 1
+              memory: 64Mi
             limits:
-              memory: 256Mi
+              memory: 64Mi
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -89,8 +89,8 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: api
-  minReplicas: 2
-  maxReplicas: 20
+  minReplicas: 10
+  maxReplicas: 100
   metrics:
     - type: Resource
       resource:
