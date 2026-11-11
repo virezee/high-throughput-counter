@@ -15,6 +15,10 @@ spec:
     metadata:
       labels:
         app: api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: /metrics
     spec:
       terminationGracePeriodSeconds: 30
       securityContext:
@@ -104,7 +108,7 @@ spec:
           name: sse_active_connections
         target:
           type: AverageValue
-          averageValue: "5000"
+          averageValue: "1200"
   behavior:
     scaleDown:
       stabilizationWindowSeconds: 300
