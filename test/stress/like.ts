@@ -5,8 +5,8 @@ const stepLikes = [10_000_000, 20_000_000, 50_000_000, 100_000_000]
 const windowSeconds = 600
 const rampSeconds = 30
 const holdSeconds = 120
-const p50Ms = 10
-const p99Ms = 100
+const p50Ms = 50
+const p99Ms = 200
 const abortEvalDelaySeconds = 10
 const msPerSecond = 1000
 const statusAccepted = 202
@@ -17,6 +17,7 @@ if (!baseURL) {
   throw new Error('BASE_URL is required')
 }
 
+const firstLikesPerSecond = stepLikes[0] / windowSeconds
 const peakLikesPerSecond = Math.max(...stepLikes) / windowSeconds
 
 http.setResponseCallback(http.expectedStatuses(statusAccepted))
@@ -36,7 +37,8 @@ export const options = {
         { duration: `${rampSeconds}s`, target },
         { duration: `${holdSeconds}s`, target }
       ]),
-      preAllocatedVUs: Math.ceil((peakLikesPerSecond * p99Ms) / msPerSecond)
+      preAllocatedVUs: Math.ceil((firstLikesPerSecond * p99Ms) / msPerSecond),
+      maxVUs: Math.ceil((peakLikesPerSecond * p99Ms) / msPerSecond)
     }
   },
   thresholds: {

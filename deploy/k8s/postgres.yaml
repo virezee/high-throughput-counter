@@ -22,6 +22,12 @@ spec:
           env:
             - name: POSTGRES_PASSWORD
               value: postgres
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1536Mi
+            limits:
+              memory: 1536Mi
           readinessProbe:
             tcpSocket:
               port: postgres

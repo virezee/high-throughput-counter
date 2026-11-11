@@ -44,7 +44,13 @@ spec:
             - name: KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS
               value: "0"
             - name: KAFKA_NUM_PARTITIONS
-              value: "3"
+              value: "13"
+          resources:
+            requests:
+              cpu: 1
+              memory: 1536Mi
+            limits:
+              memory: 1536Mi
           readinessProbe:
             tcpSocket:
               port: broker
@@ -85,6 +91,6 @@ spec:
             - --topic
             - likes
             - --partitions
-            - "3"
+            - "13"
             - --replication-factor
             - "1"

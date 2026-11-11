@@ -44,7 +44,7 @@ const (
 )
 
 const (
-	likeTopicPartitions = 3
+	likeTopicPartitions = 13
 	likeTopicReplicas   = 1
 	decimalBase         = 10
 	int64Bits           = 64
