@@ -5,8 +5,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"high-throughput-counter/internal/domain/flashsale"
 )
 
 type Publisher interface {
-	Publish(ctx context.Context, postID, userID uuid.UUID, likedAt time.Time) error
+	PublishLike(ctx context.Context, postID, userID uuid.UUID, likedAt time.Time) error
+	PublishOrder(ctx context.Context, order flashsale.Order) error
 }

@@ -19,7 +19,7 @@ func NewProducer(cl *kgo.Client, likeTopic, flashSaleTopic string) *producer {
 	return &producer{cl, likeTopic, flashSaleTopic}
 }
 
-func (p *producer) Publish(
+func (p *producer) PublishLike(
 	ctx context.Context,
 	postID, userID uuid.UUID,
 	likedAt time.Time,

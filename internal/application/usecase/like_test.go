@@ -33,7 +33,7 @@ type fakePublisher struct {
 	userID  uuid.UUID
 }
 
-func (f *fakePublisher) Publish(
+func (f *fakePublisher) PublishLike(
 	_ context.Context,
 	postID, userID uuid.UUID,
 	likedAt time.Time,

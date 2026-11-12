@@ -44,7 +44,7 @@ func TestPublish(t *testing.T) {
 		cl,
 		testLikeTopic,
 		testFlashSaleTopic,
-	).Publish(t.Context(), postID, userID, likedAt)
+	).PublishLike(t.Context(), postID, userID, likedAt)
 	require.NoError(t, err)
 	ctx, cancel := context.WithTimeout(t.Context(), pollTimeout)
 	defer cancel()

@@ -13,4 +13,4 @@ FROM gcr.io/distroless/static-debian13
 WORKDIR /
 COPY --from=build /app/bin /app
 USER nonroot:nonroot
-ENTRYPOINT ["/app"]J
+ENTRYPOINT ["/app"]
