@@ -7,6 +7,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/twmb/franz-go/pkg/kgo"
+
+	"high-throughput-counter/internal/domain/flashsale"
 )
 
 type producer struct {
@@ -29,6 +31,19 @@ func (p *producer) PublishLike(
 		Key:       userID[:],
 		Value:     postID[:],
 		Timestamp: likedAt,
+	}
+	if err := p.cl.ProduceSync(ctx, record).FirstErr(); err != nil {
+		return fmt.Errorf("kafka publish: %w", err)
+	}
+	return nil
+}
+
+func (p *producer) PublishOrder(ctx context.Context, order flashsale.Order) error {
+	record := &kgo.Record{
+		Topic:     p.flashSaleTopic,
+		Key:       order.UserID[:],
+		Value:     append(order.ID[:], order.FlashSaleID[:]...),
+		Timestamp: order.CreatedAt,
 	}
 	if err := p.cl.ProduceSync(ctx, record).FirstErr(); err != nil {
 		return fmt.Errorf("kafka publish: %w", err)

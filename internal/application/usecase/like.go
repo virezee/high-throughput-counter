@@ -11,13 +11,13 @@ import (
 )
 
 type likeUseCase struct {
-	publisher   outbound.Publisher
+	publisher   outbound.LikePublisher
 	counterRepo like.CounterRepository
 	likeRepo    like.LikeRepository
 }
 
 func NewLikeUseCase(
-	publisher outbound.Publisher,
+	publisher outbound.LikePublisher,
 	counterRepo like.CounterRepository,
 	likeRepo like.LikeRepository,
 ) *likeUseCase {
