@@ -42,6 +42,8 @@ spec:
             - name: http
               containerPort: 3000
           env:
+            - name: POSTGRES_DSN
+              value: postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable
             - name: DRAGONFLY_ADDR
               value: dragonfly:6379
             - name: KAFKA_ADDR

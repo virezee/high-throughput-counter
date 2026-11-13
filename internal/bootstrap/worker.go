@@ -17,13 +17,13 @@ import (
 func NewWorker(
 	ctx context.Context,
 	postgresDSN, dragonflyAddr, kafkaAddr string,
-) (processLikes func(context.Context) error, cleanup func()) {
+) (process func(context.Context) error, cleanup func()) {
 	pool, err := pgxpool.New(ctx, postgresDSN)
 	if err != nil {
 		log.Fatal().Err(err).Send()
 	}
 	rdb := redis.NewClient(&redis.Options{Addr: dragonflyAddr})
-	cl, err := kgo.NewClient(
+	likeCl, err := kgo.NewClient(
 		kgo.SeedBrokers(kafkaAddr),
 		kgo.ConsumerGroup("like-worker"),
 		kgo.ConsumeTopics("likes"),
@@ -32,17 +32,45 @@ func NewWorker(
 	if err != nil {
 		log.Fatal().Err(err).Send()
 	}
+	flashSaleCl, err := kgo.NewClient(
+		kgo.SeedBrokers(kafkaAddr),
+		kgo.ConsumerGroup("checkout-worker"),
+		kgo.ConsumeTopics("checkouts"),
+		kgo.DisableAutoCommit(),
+	)
+	if err != nil {
+		log.Fatal().Err(err).Send()
+	}
 	likeRepo := postgres.NewRepository(pool)
 	counterRepo := dragonfly.NewCounter(rdb)
+	orderRepo := postgres.NewOrderRepository(pool)
+	stockRepo := dragonfly.NewStock(rdb)
 	likeUC := usecase.NewLikeUseCase(nil, counterRepo, likeRepo)
-	consumer := kafka.NewConsumer(cl, likeUC)
+	flashSaleUC := usecase.NewFlashSaleUseCase(nil, stockRepo, orderRepo)
+	consumer := kafka.NewConsumer(likeCl, flashSaleCl, likeUC, flashSaleUC)
+	process = func(ctx context.Context) error {
+		ctx, cancel := context.WithCancel(ctx)
+		defer cancel()
+		errCh := make(chan error, 2)
+		go func() {
+			errCh <- consumer.ProcessLikes(ctx)
+		}()
+		go func() {
+			errCh <- consumer.ProcessOrders(ctx)
+		}()
+		err := <-errCh
+		cancel()
+		<-errCh
+		return err
+	}
 	cleanup = func() {
-		cl.Close()
+		likeCl.Close()
+		flashSaleCl.Close()
 		err := rdb.Close()
 		if err != nil {
 			log.Error().Err(err).Send()
 		}
 		pool.Close()
 	}
-	return consumer.ProcessLikes, cleanup
+	return process, cleanup
 }

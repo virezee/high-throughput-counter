@@ -23,14 +23,14 @@ func main() {
 		syscall.SIGTERM,
 	)
 	defer stop()
-	processLikes, cleanup := bootstrap.NewWorker(
+	process, cleanup := bootstrap.NewWorker(
 		ctx,
 		os.Getenv("POSTGRES_DSN"),
 		os.Getenv("DRAGONFLY_ADDR"),
 		os.Getenv("KAFKA_ADDR"),
 	)
 	defer cleanup()
-	err := processLikes(ctx)
+	err := process(ctx)
 	if err != nil && !errors.Is(err, context.Canceled) {
 		log.Error().Err(err).Send()
 	}

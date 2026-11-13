@@ -7,8 +7,8 @@ import (
 )
 
 type Order struct {
+	CreatedAt   time.Time
 	ID          uuid.UUID
 	FlashSaleID uuid.UUID
 	UserID      uuid.UUID
-	CreatedAt   time.Time
 }

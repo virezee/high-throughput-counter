@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -33,7 +32,7 @@ func (h *FlashSaleHandler) RemainingStock(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	writeJSON(w, http.StatusOK, stockResponse{Stock: stock})
+	writeJSON(w, http.StatusOK, map[string]any{"stock": stock})
 }
 
 func (h *FlashSaleHandler) Checkout(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +55,7 @@ func (h *FlashSaleHandler) Checkout(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	writeJSON(w, http.StatusAccepted, checkoutResponse{OrderID: orderID})
+	writeJSON(w, http.StatusAccepted, map[string]any{"order_id": orderID})
 }
 
 func (h *FlashSaleHandler) FindOrder(w http.ResponseWriter, r *http.Request) {
@@ -74,27 +73,12 @@ func (h *FlashSaleHandler) FindOrder(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	writeJSON(w, http.StatusOK, orderResponse{
-		ID:          order.ID,
-		FlashSaleID: order.FlashSaleID,
-		UserID:      order.UserID,
-		CreatedAt:   order.CreatedAt,
+	writeJSON(w, http.StatusOK, map[string]any{
+		"id":            order.ID,
+		"flash_sale_id": order.FlashSaleID,
+		"user_id":       order.UserID,
+		"created_at":    order.CreatedAt,
 	})
-}
-
-type stockResponse struct {
-	Stock int64 `json:"stock"`
-}
-
-type checkoutResponse struct {
-	OrderID uuid.UUID `json:"order_id"`
-}
-
-type orderResponse struct {
-	ID          uuid.UUID `json:"id"`
-	FlashSaleID uuid.UUID `json:"flash_sale_id"`
-	UserID      uuid.UUID `json:"user_id"`
-	CreatedAt   time.Time `json:"created_at"`
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {

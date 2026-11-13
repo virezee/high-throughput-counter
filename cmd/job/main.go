@@ -25,7 +25,7 @@ func main() {
 		syscall.SIGTERM,
 	)
 	defer stop()
-	reconcileLikes, cleanup := bootstrap.NewJob(
+	reconcile, cleanup := bootstrap.NewJob(
 		ctx,
 		os.Getenv("POSTGRES_DSN"),
 		os.Getenv("DRAGONFLY_ADDR"),
@@ -39,7 +39,7 @@ func main() {
 			return
 		case <-ticker.C:
 		}
-		err := reconcileLikes(ctx)
+		err := reconcile(ctx)
 		if err != nil && !errors.Is(err, context.Canceled) {
 			log.Error().Err(err).Send()
 		}

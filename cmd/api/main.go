@@ -27,6 +27,8 @@ func main() {
 	)
 	defer stop()
 	app, stopStreams, cleanup := bootstrap.NewApp(
+		ctx,
+		os.Getenv("POSTGRES_DSN"),
 		os.Getenv("DRAGONFLY_ADDR"),
 		os.Getenv("KAFKA_ADDR"),
 	)

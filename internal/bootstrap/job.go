@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
@@ -15,7 +16,7 @@ import (
 func NewJob(
 	ctx context.Context,
 	postgresDSN, dragonflyAddr string,
-) (reconcileLikes func(context.Context) error, cleanup func()) {
+) (reconcile func(context.Context) error, cleanup func()) {
 	pool, err := pgxpool.New(ctx, postgresDSN)
 	if err != nil {
 		log.Fatal().Err(err).Send()
@@ -23,7 +24,13 @@ func NewJob(
 	rdb := redis.NewClient(&redis.Options{Addr: dragonflyAddr})
 	likeRepo := postgres.NewRepository(pool)
 	counterRepo := dragonfly.NewCounter(rdb)
+	orderRepo := postgres.NewOrderRepository(pool)
+	stockRepo := dragonfly.NewStock(rdb)
 	likeUC := usecase.NewLikeUseCase(nil, counterRepo, likeRepo)
+	flashSaleUC := usecase.NewFlashSaleUseCase(nil, stockRepo, orderRepo)
+	reconcile = func(ctx context.Context) error {
+		return errors.Join(likeUC.ReconcileLikes(ctx), flashSaleUC.ReconcileStock(ctx))
+	}
 	cleanup = func() {
 		err := rdb.Close()
 		if err != nil {
@@ -31,5 +38,5 @@ func NewJob(
 		}
 		pool.Close()
 	}
-	return likeUC.ReconcileLikes, cleanup
+	return reconcile, cleanup
 }
